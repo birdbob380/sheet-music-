@@ -1,194 +1,340 @@
-import tkinter as tk
-import json
-from tkinter import ttk
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sheet Music Maker</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f8ff;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            flex-direction: column;
+        }
 
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            max-width: 600px;
+        }
 
-class DraggableNote:
-    def __init__(self, canvas, note, x, y):
-        self.canvas = canvas
-        self.note = note
-        self.x, self.y = x, y
-        self.id = self.canvas.create_text(x, y, text=note, font=('Arial', 100), fill="black", tags="draggable")
+        .login-container,
+        .signup-container,
+        .main-container {
+            background-color: #ffffff;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 600px;
+            text-align: center;
+        }
 
-        # Bind events to allow dragging
-        self.canvas.tag_bind(self.id, '<ButtonPress-1>', self.start_drag)
-        self.canvas.tag_bind(self.id, '<B1-Motion>', self.drag)
-        self.canvas.tag_bind(self.id, '<ButtonRelease-1>', self.end_drag)
+        input[type="text"],
+        input[type="password"] {
+            width: calc(100% - 24px);
+            padding: 12px;
+            margin: 8px 0;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            box-sizing: border-box;
+        }
 
-    def start_drag(self, event):
-        # Store the initial click position
-        self.last_x, self.last_y = event.x, event.y
+        button {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+        }
 
-    def drag(self, event):
-        # Calculate the offset from the starting position
-        dx, dy = event.x - self.last_x, event.y - self.last_y
+        button:hover {
+            background-color: #0056b3;
+        }
 
-        # Move the note
-        self.canvas.move(self.id, dx, dy)
+        .link {
+            display: block;
+            margin-top: 10px;
+            color: #007bff;
+            text-decoration: none;
+        }
 
-        # Update last position
-        self.last_x = event.x
-        self.last_y = event.y
+        .link:hover {
+            text-decoration: underline;
+        }
 
-        # Check if dragging over the bin
-        x1, y1, x2, y2 = self.canvas.bins_coords
-        note_coords = self.canvas.bbox(self.id)
-        if self.is_overlapping(note_coords, (x1, y1, x2, y2)):
-            self.canvas.itemconfig(self.canvas.bin_id, fill='red')
-        else:
-            self.canvas.itemconfig(self.canvas.bin_id, fill='gray')
+        .main-container {
+            display: none;
+        }
 
-    def end_drag(self, event):
-        # Check if the note is over the bin and delete if so
-        x1, y1, x2, y2 = self.canvas.bins_coords
-        note_coords = self.canvas.bbox(self.id)
-        if self.is_overlapping(note_coords, (x1, y1, x2, y2)):
-            self.canvas.delete(self.id)
+        .note-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 10px 0;
+        }
 
-    @staticmethod
-    def is_overlapping(rect1, rect2):
-        return not (rect1[2] < rect2[0] or rect1[0] > rect2[2] or
-                    rect1[3] < rect2[1] or rect1[1] > rect2[3])
+        .note-button-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            text-align: center;
+            margin: 5px;
+            border: none;
+            background-color: #007bff;
+            color: white;
+            cursor: pointer;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
 
+        .note-button-container:hover {
+            background-color: #0056b3;
+        }
 
-class SheetMusicMaker(tk.Tk):
-    def __init__(self):
-        super().__init__()
+        .canvas-wrapper {
+            position: relative;
+        }
 
-        self.title("Sheet Music Maker")
-        self.geometry("800x600")
-        self.configure(bg='#f5f5f5')  # A softer background color
+        #canvas {
+            border: 1px solid #ccc;
+            background-color: #ffffff;
+        }
 
-        self.canvas = tk.Canvas(self, bg='white')
-        self.canvas.pack(fill=tk.BOTH, expand=True)
+        .bin {
+            position: absolute;
+            background-color: #f8f9fa;
+            border: 2px solid #007bff;
+            text-align: center;
+            line-height: 75px;
+            color: #007bff;
+            font-size: 16px;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            left: 20px;
+            top: 400px; /* Moved down */
+            width: 180px;
+            height: 75px;
+        }
 
-        self.draw_staff_lines()
-        self.create_bin()
+        .bin-text {
+            position: absolute;
+            width: 100%;
+            text-align: center;
+            color: #007bff;
+            font-size: 16px;
+        }
 
-        # Expanded note symbols
-        self.notes = ["♪", "♫", "♬", "♩", "♭", "♯", "𝄞", "𝄢", "𝄡", "𝄠",
-                      "𝄫", "𝄪", "𝄀", "𝄁", "𝄴", "𝄵", "𝄶", "𝄷", "𝄸",
-                      "𝄹", "𝄺", "𝄻", "𝄼", "𝄽", "𝄾", "𝄿", "𝅀", "𝅁",
-                      "𝅂", "𝅃", "𝅄", "𝅅", "𝅆", "𝅇", "𝅈"]
+        .controls {
+            margin: 10px 0;
+        }
 
-        self.slots = ["slot1", "slot2", "slot3"]
-        self.selected_slot = tk.StringVar(value=self.slots[0])
+        select {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+            font-size: 16px;
+        }
 
-        self.create_note_buttons()
-        self.create_draggable_note(200, 200, self.notes[0])
-        self.create_save_load_buttons()
+        button {
+            margin: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-container" class="login-container">
+            <h2>Login</h2>
+            <form id="login-form">
+                <input type="text" id="login-username" placeholder="Username" required>
+                <input type="password" id="login-password" placeholder="Password" required>
+                <button type="submit">Login</button>
+            </form>
+            <a href="#" class="link" id="to-signup">Create an account</a>
+        </div>
 
-        # Bind F11 to toggle fullscreen
-        self.bind('<F11>', self.toggle_fullscreen)
-        self.bind('<Escape>', self.exit_fullscreen)
+        <div id="signup-container" class="signup-container">
+            <h2>Sign Up</h2>
+            <form id="signup-form">
+                <input type="text" id="signup-username" placeholder="Username" required>
+                <input type="password" id="signup-password" placeholder="Password" required>
+                <button type="submit">Sign Up</button>
+            </form>
+            <a href="#" class="link" id="to-login">Already have an account? Login</a>
+        </div>
 
-    def draw_staff_lines(self):
-        line_spacing = 20
-        for i in range(5):
-            y_position = 100 + i * line_spacing
-            self.canvas.create_line(50, y_position, 750, y_position, fill='black', width=2)
+        <div id="main-container" class="main-container">
+            <div class="canvas-wrapper">
+                <canvas id="canvas" width="800" height="600"></canvas>
+                <div class="bin" id="bin">
+                    <div class="bin-text">Bin</div>
+                </div>
+            </div>
+            <div class="controls">
+                <label for="slot-select">Select Save Slot:</label>
+                <select id="slot-select">
+                    <option value="slot1">Slot 1</option>
+                    <option value="slot2">Slot 2</option>
+                    <option value="slot3">Slot 3</option>
+                    <option value="slot4">Slot 4</option>
+                    <option value="slot5">Slot 5</option>
+                    <option value="slot6">Slot 6</option>
+                    <option value="slot7">Slot 7</option>
+                    <option value="slot8">Slot 8</option>
+                    <option value="slot9">Slot 9</option>
+                    <option value="slot10">Slot 10</option>
+                </select>
+                <button id="save-btn">Save</button>
+                <button id="load-btn">Load</button>
+                <button id="logout-btn">Logout</button>
+            </div>
+            <div class="note-buttons">
+                <!-- Note buttons will be dynamically added by JavaScript -->
+            </div>
+        </div>
+    </div>
 
-    def create_bin(self):
-        self.canvas.bins_coords = (650, 400, 790, 470)
-        self.canvas.bin_id = self.create_rounded_rectangle(self.canvas.bins_coords,
-                                                           radius=10, fill='gray', outline='black')
-        self.canvas.create_text(720, 435, text="Bin", font=('Arial', 14), fill='white')
+    <script>
+        // Handle Navigation
+        document.getElementById('to-signup').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('signup-container').style.display = 'block';
+        });
 
-    def create_rounded_rectangle(self, coords, radius, **kwargs):
-        x1, y1, x2, y2 = coords
-        points = [
-            x1 + radius, y1,      # Start point
-            x2 - radius, y1,      # Top line
-            x2, y1,                # Top right corner
-            x2, y1 + radius,       # Right line
-            x2, y2 - radius,       # Bottom right corner
-            x2 - radius, y2,       # Bottom line
-            x1 + radius, y2,       # Bottom left corner
-            x1, y2,                # Left line
-            x1, y1 + radius        # Top left corner
-        ]
-        return self.canvas.create_polygon(points, **kwargs, smooth=True)
+        document.getElementById('to-login').addEventListener('click', function(event) {
+            event.preventDefault();
+            document.getElementById('signup-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
 
-    def create_note_buttons(self):
-        scroll_frame = tk.Frame(self, bg='#f5f5f5')
-        scroll_frame.pack(fill=tk.X, padx=10, pady=10)
+        // Handle Login
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('login-username').value;
+            const password = document.getElementById('login-password').value;
 
-        self.note_canvas = tk.Canvas(scroll_frame, bg='#f5f5f5', height=40)
-        self.note_scrollbar = tk.Scrollbar(scroll_frame, orient="horizontal", command=self.note_canvas.xview)
-        self.note_scrollable_frame = tk.Frame(self.note_canvas, bg='#f5f5f5')
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.username === username && u.password === password);
 
-        self.note_scrollable_frame.bind("<Configure>",
-                                        lambda e: self.note_canvas.configure(scrollregion=self.note_canvas.bbox("all")))
+            if (user) {
+                localStorage.setItem('currentUser', username);
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('signup-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+                init();
+            } else {
+                alert('Invalid username or password');
+            }
+        });
 
-        self.note_canvas.create_window((0, 0), window=self.note_scrollable_frame, anchor="nw")
+        // Handle Signup
+        document.getElementById('signup-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const username = document.getElementById('signup-username').value;
+            const password = document.getElementById('signup-password').value;
 
-        self.note_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
-        self.note_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
-        self.note_canvas.configure(xscrollcommand=self.note_scrollbar.set)
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            if (users.some(u => u.username === username)) {
+                alert('Username already exists');
+            } else {
+                users.push({ username, password });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Account created successfully');
+                document.getElementById('signup-container').style.display = 'none';
+                document.getElementById('login-container').style.display = 'block';
+            }
+        });
 
-        for note in self.notes:
-            button = tk.Button(self.note_scrollable_frame, text=note,
-                               command=lambda n=note: self.create_draggable_note(100, 100, n),
-                               bg="#007bff", fg="white", font=('Arial', 16, 'bold'),
-                               borderwidth=2, relief='flat')  # Modern button style
-            button.pack(side=tk.LEFT, padx=5, pady=5)
+        function drawStaff() {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const staffLines = [80, 100, 120, 140, 160];
 
-    def create_draggable_note(self, x, y, note):
-        DraggableNote(self.canvas, note, x, y)
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-    def create_save_load_buttons(self):
-        button_frame = tk.Frame(self, bg='#f5f5f5')
-        button_frame.pack(fill=tk.X, padx=10, pady=10)
+            ctx.strokeStyle = '#000000';
+            ctx.lineWidth = 2;
 
-        slot_label = tk.Label(button_frame, text="Select Save Slot:", bg='#f5f5f5', font=('Arial', 12))
-        slot_label.pack(side=tk.LEFT)
+            staffLines.forEach(y => {
+                ctx.beginPath();
+                ctx.moveTo(20, y);
+                ctx.lineTo(canvas.width - 20, y);
+                ctx.stroke();
+            });
+        }
 
-        slot_dropdown = ttk.Combobox(button_frame, textvariable=self.selected_slot,
-                                     values=self.slots, state="readonly")
-        slot_dropdown.pack(side=tk.LEFT, padx=(0, 10))
+        function init() {
+            drawStaff();
+            createNoteButtons();
+        }
 
-        save_button = tk.Button(button_frame, text="Save", command=self.save_notes,
-                                bg="#28a745", fg="white", font=('Arial', 12, 'bold'),
-                                borderwidth=2, relief='flat')  # Modern button style
-        save_button.pack(side=tk.LEFT, padx=5)
+        function addNoteToCanvas(note) {
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            const x = canvas.width / 2;
+            const y = 150; // Default y position
 
-        load_button = tk.Button(button_frame, text="Load", command=self.load_notes,
-                                bg="#dc3545", fg="white", font=('Arial', 12, 'bold'),
-                                borderwidth=2, relief='flat')  # Modern button style
-        load_button.pack(side=tk.LEFT, padx=5)
+            ctx.font = '24px Arial';
+            ctx.fillStyle = '#000000';
+            ctx.textAlign = 'center';
+            ctx.fillText(note, x, y);
+        }
 
-    def save_notes(self):
-        slot = self.selected_slot.get()
-        notes_data = []
-        for item in self.canvas.find_withtag("draggable"):
-            note = self.canvas.itemcget(item, 'text')
-            x, y = self.canvas.coords(item)
-            notes_data.append({'note': note, 'x': x, 'y': y})
+        function createNoteButtons() {
+            const noteButtonsContainer = document.querySelector('.note-buttons');
+            noteButtonsContainer.innerHTML = ''; // Clear previous buttons
 
-        with open(f'{slot}.json', 'w') as f:
-            json.dump(notes_data, f)
+            const notes = [
+                'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
+                '♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡', '𝄠', '𝄫',
+                '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺', '𝄻',
+                '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'
+            ];
 
-    def load_notes(self):
-        for item in self.canvas.find_withtag("draggable"):
-            self.canvas.delete(item)
+            notes.forEach(note => {
+                const button = document.createElement('button');
+                button.className = 'note-button-container';
+                button.textContent = note;
+                button.addEventListener('click', function() {
+                    addNoteToCanvas(note);
+                });
+                noteButtonsContainer.appendChild(button);
+            });
+        }
 
-        slot = self.selected_slot.get()
-        try:
-            with open(f'{slot}.json', 'r') as f:
-                notes_data = json.load(f)
-                for note_data in notes_data:
-                    self.create_draggable_note(note_data['x'], note_data['y'], note_data['note'])
-        except FileNotFoundError:
-            print("Save file not found!")
+        document.getElementById('logout-btn').addEventListener('click', function() {
+            localStorage.removeItem('currentUser');
+            document.getElementById('main-container').style.display = 'none';
+            document.getElementById('login-container').style.display = 'block';
+        });
 
-    def toggle_fullscreen(self, event=None):
-        self.attributes("-fullscreen", True)
+        // Initialize
+        const currentUser = localStorage.getItem('currentUser');
+        if (currentUser) {
+            document.getElementById('login-container').style.display = 'none';
+            document.getElementById('signup-container').style.display = 'none';
+            document.getElementById('main-container').style.display = 'block';
+            init();
+        } else {
+            document.getElementById('login-container').style.display = 'block';
+            document.getElementById('signup-container').style.display = 'none';
+            document.getElementById('main-container').style.display = 'none';
+        }
+    </script>
+</body>
+</html>
 
-    def exit_fullscreen(self, event=None):
-        self.attributes("-fullscreen", False)
-        self.geometry("800x600")
-
-
-if __name__ == "__main__":
-    app = SheetMusicMaker()
-    app.mainloop()
