@@ -16,15 +16,13 @@
             height: 100vh;
             flex-direction: column;
         }
-
         .container {
             display: flex;
             flex-direction: column;
             align-items: center;
             width: 100%;
-            max-width: 600px;
+            max-width: 800px;
         }
-
         .login-container,
         .signup-container,
         .main-container {
@@ -33,10 +31,8 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
             width: 100%;
-            max-width: 600px;
             text-align: center;
         }
-
         input[type="text"],
         input[type="password"] {
             width: calc(100% - 24px);
@@ -46,7 +42,6 @@
             border-radius: 6px;
             box-sizing: border-box;
         }
-
         button {
             background-color: #007bff;
             color: white;
@@ -56,33 +51,24 @@
             cursor: pointer;
             font-size: 16px;
         }
-
         button:hover {
             background-color: #0056b3;
         }
-
         .link {
             display: block;
             margin-top: 10px;
             color: #007bff;
             text-decoration: none;
         }
-
         .link:hover {
             text-decoration: underline;
         }
-
-        .main-container {
-            display: none;
-        }
-
         .note-buttons {
             display: flex;
             flex-wrap: wrap;
             justify-content: center;
             margin: 10px 0;
         }
-
         .note-button-container {
             display: flex;
             align-items: center;
@@ -100,20 +86,26 @@
             border-radius: 6px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-
         .note-button-container:hover {
             background-color: #0056b3;
         }
-
         .canvas-wrapper {
             position: relative;
+            width: 100%;
+            max-width: 800px;
         }
-
         #canvas {
             border: 1px solid #ccc;
             background-color: #ffffff;
         }
-
+        #toolbar {
+            margin-bottom: 20px;
+        }
+        #toolbar button {
+            font-size: 24px;
+            margin-right: 10px;
+            cursor: pointer;
+        }
         .bin {
             position: absolute;
             background-color: #f8f9fa;
@@ -129,7 +121,6 @@
             width: 180px;
             height: 75px;
         }
-
         .bin-text {
             position: absolute;
             width: 100%;
@@ -137,20 +128,14 @@
             color: #007bff;
             font-size: 16px;
         }
-
         .controls {
             margin: 10px 0;
         }
-
         select {
             padding: 8px;
             border: 1px solid #ccc;
             border-radius: 6px;
             font-size: 16px;
-        }
-
-        button {
-            margin: 5px;
         }
     </style>
 </head>
@@ -166,7 +151,7 @@
             <a href="#" class="link" id="to-signup">Create an account</a>
         </div>
 
-        <div id="signup-container" class="signup-container">
+        <div id="signup-container" class="signup-container" style="display: none;">
             <h2>Sign Up</h2>
             <form id="signup-form">
                 <input type="text" id="signup-username" placeholder="Username" required>
@@ -176,7 +161,38 @@
             <a href="#" class="link" id="to-login">Already have an account? Login</a>
         </div>
 
-        <div id="main-container" class="main-container">
+        <div id="main-container" class="main-container" style="display: none;">
+            <div id="toolbar">
+                <button data-symbol="𝄞">𝄞</button>
+                <button data-symbol="𝄢">𝄢</button>
+                <button data-symbol="𝄡">𝄡</button>
+                <button data-symbol="𝄟">𝄟</button>
+                <button data-symbol="𝄪">𝄪</button>
+                <button data-symbol="𝄫">𝄫</button>
+                <button data-symbol="♮">♮</button>
+                <button data-symbol="♯">♯</button>
+                <button data-symbol="♭">♭</button>
+                <button data-symbol="𝅗𝅥">𝅗𝅥</button>
+                <button data-symbol="𝅘𝅥">𝅘𝅥</button>
+                <button data-symbol="𝅘𝅥𝅮">𝅘𝅥𝅮</button>
+                <button data-symbol="𝅘𝅥𝅯">𝅘𝅥𝅯</button>
+                <button data-symbol="𝅘𝅥𝅰">𝅘𝅥𝅰</button>
+                <button data-symbol="𝅘𝅥𝅱">𝅘𝅥𝅱</button>
+                <button data-symbol="𝅘𝅥𝅲">𝅘𝅥𝅲</button>
+                <button data-symbol="𝅥">𝅥</button>
+                <button data-symbol="𝅦">𝅦</button>
+                <button data-symbol="𝅧">𝅧</button>
+                <button data-symbol="𝅨">𝅨</button>
+                <button data-symbol="𝅩">𝅩</button>
+                <button data-symbol="𝅪">𝅪</button>
+                <button data-symbol="𝅫">𝅫</button>
+                <button data-symbol="𝅬">𝅬</button>
+                <button data-symbol="𝅭">𝅭</button>
+                <button data-symbol="𝅮">𝅮</button>
+                <button data-symbol="𝅯">𝅯</button>
+                <button data-symbol="𝅰">𝅰</button>
+                <button data-symbol="𝅱">𝅱</button>
+            </div>
             <div class="canvas-wrapper">
                 <canvas id="canvas" width="800" height="600"></canvas>
                 <div class="bin" id="bin">
@@ -202,21 +218,30 @@
                 <button id="logout-btn">Logout</button>
             </div>
             <div class="note-buttons">
-                <!-- Note buttons will be dynamically added by JavaScript -->
+                <button class="note-button-container" data-note="C">C</button>
+                <button class="note-button-container" data-note="C#">C#</button>
+                <button class="note-button-container" data-note="D">D</button>
+                <button class="note-button-container" data-note="D#">D#</button>
+                <button class="note-button-container" data-note="E">E</button>
+                <button class="note-button-container" data-note="F">F</button>
+                <button class="note-button-container" data-note="F#">F#</button>
+                <button class="note-button-container" data-note="G">G</button>
+                <button class="note-button-container" data-note="G#">G#</button>
+                <button class="note-button-container" data-note="A">A</button>
+                <button class="note-button-container" data-note="A#">A#</button>
+                <button class="note-button-container" data-note="B">B</button>
             </div>
         </div>
     </div>
 
     <script>
-        // Handle Navigation
-        document.getElementById('to-signup').addEventListener('click', function(event) {
-            event.preventDefault();
+        // Switch between login and signup
+        document.getElementById('to-signup').addEventListener('click', function() {
             document.getElementById('login-container').style.display = 'none';
             document.getElementById('signup-container').style.display = 'block';
         });
 
-        document.getElementById('to-login').addEventListener('click', function(event) {
-            event.preventDefault();
+        document.getElementById('to-login').addEventListener('click', function() {
             document.getElementById('signup-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
         });
@@ -227,17 +252,12 @@
             const username = document.getElementById('login-username').value;
             const password = document.getElementById('login-password').value;
 
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                localStorage.setItem('currentUser', username);
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            if (users[username] && users[username] === password) {
                 document.getElementById('login-container').style.display = 'none';
-                document.getElementById('signup-container').style.display = 'none';
                 document.getElementById('main-container').style.display = 'block';
-                init();
             } else {
-                alert('Invalid username or password');
+                alert('Invalid username or password.');
             }
         });
 
@@ -247,94 +267,114 @@
             const username = document.getElementById('signup-username').value;
             const password = document.getElementById('signup-password').value;
 
-            let users = JSON.parse(localStorage.getItem('users')) || [];
-            if (users.some(u => u.username === username)) {
-                alert('Username already exists');
+            const users = JSON.parse(localStorage.getItem('users')) || {};
+            if (users[username]) {
+                alert('Username already exists.');
             } else {
-                users.push({ username, password });
+                users[username] = password;
                 localStorage.setItem('users', JSON.stringify(users));
-                alert('Account created successfully');
+                alert('Signup successful! You can now log in.');
                 document.getElementById('signup-container').style.display = 'none';
                 document.getElementById('login-container').style.display = 'block';
             }
         });
 
-        function drawStaff() {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const staffLines = [80, 100, 120, 140, 160];
+        // Handle Save and Load
+        document.getElementById('save-btn').addEventListener('click', function() {
+            const selectedSlot = document.getElementById('slot-select').value;
+            localStorage.setItem(selectedSlot, JSON.stringify(symbols));
+            alert('Saved to ' + selectedSlot);
+        });
 
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            ctx.strokeStyle = '#000000';
-            ctx.lineWidth = 2;
-
-            staffLines.forEach(y => {
-                ctx.beginPath();
-                ctx.moveTo(20, y);
-                ctx.lineTo(canvas.width - 20, y);
-                ctx.stroke();
-            });
-        }
-
-        function init() {
-            drawStaff();
-            createNoteButtons();
-        }
-
-        function addNoteToCanvas(note) {
-            const canvas = document.getElementById('canvas');
-            const ctx = canvas.getContext('2d');
-            const x = canvas.width / 2;
-            const y = 150; // Default y position
-
-            ctx.font = '24px Arial';
-            ctx.fillStyle = '#000000';
-            ctx.textAlign = 'center';
-            ctx.fillText(note, x, y);
-        }
-
-        function createNoteButtons() {
-            const noteButtonsContainer = document.querySelector('.note-buttons');
-            noteButtonsContainer.innerHTML = ''; // Clear previous buttons
-
-            const notes = [
-                'C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B',
-                '♪', '♫', '♬', '♩', '♭', '♯', '𝄞', '𝄢', '𝄡', '𝄠', '𝄫',
-                '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺', '𝄻',
-                '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'
-            ];
-
-            notes.forEach(note => {
-                const button = document.createElement('button');
-                button.className = 'note-button-container';
-                button.textContent = note;
-                button.addEventListener('click', function() {
-                    addNoteToCanvas(note);
-                });
-                noteButtonsContainer.appendChild(button);
-            });
-        }
+        document.getElementById('load-btn').addEventListener('click', function() {
+            const selectedSlot = document.getElementById('slot-select').value;
+            const savedSymbols = JSON.parse(localStorage.getItem(selectedSlot)) || [];
+            symbols = savedSymbols;
+            drawSymbols();
+            alert('Loaded from ' + selectedSlot);
+        });
 
         document.getElementById('logout-btn').addEventListener('click', function() {
-            localStorage.removeItem('currentUser');
             document.getElementById('main-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
         });
 
-        // Initialize
-        const currentUser = localStorage.getItem('currentUser');
-        if (currentUser) {
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('signup-container').style.display = 'none';
-            document.getElementById('main-container').style.display = 'block';
-            init();
-        } else {
-            document.getElementById('login-container').style.display = 'block';
-            document.getElementById('signup-container').style.display = 'none';
-            document.getElementById('main-container').style.display = 'none';
+        // Symbol Drawing and Dragging
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        let selectedSymbol = null;
+        let symbols = [];
+        let draggingSymbol = null;
+        let offsetX, offsetY;
+
+        function drawSymbols() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            symbols.forEach(symbol => {
+                ctx.font = '24px Arial';
+                ctx.fillText(symbol.text, symbol.x, symbol.y);
+            });
         }
+
+        document.querySelectorAll('#toolbar button').forEach(button => {
+            button.addEventListener('click', function() {
+                selectedSymbol = this.dataset.symbol;
+            });
+        });
+
+        canvas.addEventListener('click', function(event) {
+            if (selectedSymbol) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+                symbols.push({ text: selectedSymbol, x, y });
+                drawSymbols();
+            }
+        });
+
+        canvas.addEventListener('mousedown', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+            draggingSymbol = symbols.find(symbol => 
+                x >= symbol.x - 10 && x <= symbol.x + 10 &&
+                y >= symbol.y - 20 && y <= symbol.y + 10
+            );
+
+            if (draggingSymbol) {
+                offsetX = x - draggingSymbol.x;
+                offsetY = y - draggingSymbol.y;
+            }
+        });
+
+        canvas.addEventListener('mousemove', function(event) {
+            if (draggingSymbol) {
+                const rect = canvas.getBoundingClientRect();
+                const x = event.clientX - rect.left;
+                const y = event.clientY - rect.top;
+
+                draggingSymbol.x = x - offsetX;
+                draggingSymbol.y = y - offsetY;
+                drawSymbols();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function() {
+            draggingSymbol = null;
+        });
+
+        canvas.addEventListener('mouseleave', function() {
+            draggingSymbol = null;
+        });
+
+        // Handle Trash Bin
+        document.getElementById('bin').addEventListener('click', function() {
+            symbols = [];
+            drawSymbols();
+            alert('All symbols deleted.');
+        });
+
+        drawSymbols(); // Initial drawing of symbols
     </script>
 </body>
 </html>
-
