@@ -1,152 +1,194 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheet Music Maker</title>
-    <style>
-        body {
-            background-color: #f5f5f5;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            overflow: hidden;
-        }
-        #canvasContainer {
-            position: relative;
-            width: 800px;
-            height: 600px;
-            border: 1px solid #ccc;
-            background-color: white;
-            margin: auto;
-            overflow: hidden;
-        }
-        .note {
-            cursor: pointer;
-            font-size: 100px;
-            display: inline-block;
-            margin: 10px;
-        }
-        #bin {
-            position: absolute;
-            width: 140px;
-            height: 70px;
-            background-color: gray;
-            border: 1px solid black;
-            border-radius: 10px;
-            text-align: center;
-            line-height: 70px;
-            color: white;
-            right: 10px;
-            bottom: 10px;
-        }
-        .button {
-            margin: 10px;
-            padding: 10px;
-            background-color: #007bff;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-    </style>
-</head>
-<body>
+import tkinter as tk
+import json
+from tkinter import ttk
 
-<div id="canvasContainer">
-    <div id="staff"></div>
-    <div id="bin">Bin</div>
-</div>
-<div id="controls">
-    <button class="button" onclick="createNote('♪')">♪</button>
-    <button class="button" onclick="createNote('♫')">♫</button>
-    <button class="button" onclick="createNote('♬')">♬</button>
-    <button class="button" onclick="createNote('♩')">♩</button>
-    <!-- Add more note buttons as needed -->
-</div>
 
-<script>
-    const canvasContainer = document.getElementById('canvasContainer');
-    const bin = document.getElementById('bin');
+class DraggableNote:
+    def __init__(self, canvas, note, x, y):
+        self.canvas = canvas
+        self.note = note
+        self.x, self.y = x, y
+        self.id = self.canvas.create_text(x, y, text=note, font=('Arial', 100), fill="black", tags="draggable")
 
-    // Drawing staff lines
-    const staff = document.createElement('div');
-    staff.style.position = 'absolute';
-    staff.style.width = '100%';
-    staff.style.top = '50px';
-    staff.style.zIndex = 0;
-    for (let i = 0; i < 5; i++) {
-        const line = document.createElement('div');
-        line.style.position = 'absolute';
-        line.style.height = '2px';
-        line.style.width = '700px';
-        line.style.backgroundColor = 'black';
-        line.style.top = `${50 + i * 20}px`;
-        staff.appendChild(line);
-    }
-    canvasContainer.appendChild(staff);
+        # Bind events to allow dragging
+        self.canvas.tag_bind(self.id, '<ButtonPress-1>', self.start_drag)
+        self.canvas.tag_bind(self.id, '<B1-Motion>', self.drag)
+        self.canvas.tag_bind(self.id, '<ButtonRelease-1>', self.end_drag)
 
-    function createNote(note) {
-        const noteDiv = document.createElement('div');
-        noteDiv.classList.add('note');
-        noteDiv.innerText = note;
-        noteDiv.draggable = true;
+    def start_drag(self, event):
+        # Store the initial click position
+        self.last_x, self.last_y = event.x, event.y
 
-        noteDiv.addEventListener('dragstart', dragStart);
-        noteDiv.addEventListener('dragend', dragEnd);
-        noteDiv.addEventListener('drag', drag);
-        noteDiv.addEventListener('mousedown', initiateDrag);
+    def drag(self, event):
+        # Calculate the offset from the starting position
+        dx, dy = event.x - self.last_x, event.y - self.last_y
 
-        canvasContainer.appendChild(noteDiv);
-    }
+        # Move the note
+        self.canvas.move(self.id, dx, dy)
 
-    function initiateDrag(event) {
-        const note = event.currentTarget;
-        note.style.position = 'absolute';
-        note.style.zIndex = 1;
-        note.style.pointerEvents = 'none';
-        
-        note.style.left = (event.clientX - note.clientWidth / 2) + 'px';
-        note.style.top = (event.clientY - note.clientHeight / 2) + 'px';
+        # Update last position
+        self.last_x = event.x
+        self.last_y = event.y
 
-        document.addEventListener('mousemove', moveNote.bind(null, note));
-    }
+        # Check if dragging over the bin
+        x1, y1, x2, y2 = self.canvas.bins_coords
+        note_coords = self.canvas.bbox(self.id)
+        if self.is_overlapping(note_coords, (x1, y1, x2, y2)):
+            self.canvas.itemconfig(self.canvas.bin_id, fill='red')
+        else:
+            self.canvas.itemconfig(self.canvas.bin_id, fill='gray')
 
-    function moveNote(note, event) {
-        note.style.left = (event.clientX - note.clientWidth / 2) + 'px';
-        note.style.top = (event.clientY - note.clientHeight / 2) + 'px';
-        
-        // Check if it is over the bin
-        const binRect = bin.getBoundingClientRect();
-        const noteRect = note.getBoundingClientRect();
+    def end_drag(self, event):
+        # Check if the note is over the bin and delete if so
+        x1, y1, x2, y2 = self.canvas.bins_coords
+        note_coords = self.canvas.bbox(self.id)
+        if self.is_overlapping(note_coords, (x1, y1, x2, y2)):
+            self.canvas.delete(self.id)
 
-        if (isOverlapping(noteRect, binRect)) {
-            bin.style.backgroundColor = 'red';
-        } else {
-            bin.style.backgroundColor = 'gray';
-        }
-    }
+    @staticmethod
+    def is_overlapping(rect1, rect2):
+        return not (rect1[2] < rect2[0] or rect1[0] > rect2[2] or
+                    rect1[3] < rect2[1] or rect1[1] > rect2[3])
 
-    function isOverlapping(rect1, rect2) {
-        return !(rect1.right < rect2.left || rect1.left > rect2.right ||
-                 rect1.bottom < rect2.top || rect1.top > rect2.bottom);
-    }
 
-    function dragEnd(event) {
-        const note = event.currentTarget;
+class SheetMusicMaker(tk.Tk):
+    def __init__(self):
+        super().__init__()
 
-        // Check for drop inside the bin
-        const binRect = bin.getBoundingClientRect();
-        const noteRect = note.getBoundingClientRect();
+        self.title("Sheet Music Maker")
+        self.geometry("800x600")
+        self.configure(bg='#f5f5f5')  # A softer background color
 
-        if (isOverlapping(noteRect, binRect)) {
-            note.remove(); // Remove the note if dropped in the bin
-        }
+        self.canvas = tk.Canvas(self, bg='white')
+        self.canvas.pack(fill=tk.BOTH, expand=True)
 
-        document.removeEventListener('mousemove', moveNote.bind(null, note));
-        note.style.pointerEvents = ''; // Re-enable pointer events for the note
-    }
+        self.draw_staff_lines()
+        self.create_bin()
 
-</script>
-</body>
-</html>
+        # Expanded note symbols
+        self.notes = ["♪", "♫", "♬", "♩", "♭", "♯", "𝄞", "𝄢", "𝄡", "𝄠",
+                      "𝄫", "𝄪", "𝄀", "𝄁", "𝄴", "𝄵", "𝄶", "𝄷", "𝄸",
+                      "𝄹", "𝄺", "𝄻", "𝄼", "𝄽", "𝄾", "𝄿", "𝅀", "𝅁",
+                      "𝅂", "𝅃", "𝅄", "𝅅", "𝅆", "𝅇", "𝅈"]
+
+        self.slots = ["slot1", "slot2", "slot3"]
+        self.selected_slot = tk.StringVar(value=self.slots[0])
+
+        self.create_note_buttons()
+        self.create_draggable_note(200, 200, self.notes[0])
+        self.create_save_load_buttons()
+
+        # Bind F11 to toggle fullscreen
+        self.bind('<F11>', self.toggle_fullscreen)
+        self.bind('<Escape>', self.exit_fullscreen)
+
+    def draw_staff_lines(self):
+        line_spacing = 20
+        for i in range(5):
+            y_position = 100 + i * line_spacing
+            self.canvas.create_line(50, y_position, 750, y_position, fill='black', width=2)
+
+    def create_bin(self):
+        self.canvas.bins_coords = (650, 400, 790, 470)
+        self.canvas.bin_id = self.create_rounded_rectangle(self.canvas.bins_coords,
+                                                           radius=10, fill='gray', outline='black')
+        self.canvas.create_text(720, 435, text="Bin", font=('Arial', 14), fill='white')
+
+    def create_rounded_rectangle(self, coords, radius, **kwargs):
+        x1, y1, x2, y2 = coords
+        points = [
+            x1 + radius, y1,      # Start point
+            x2 - radius, y1,      # Top line
+            x2, y1,                # Top right corner
+            x2, y1 + radius,       # Right line
+            x2, y2 - radius,       # Bottom right corner
+            x2 - radius, y2,       # Bottom line
+            x1 + radius, y2,       # Bottom left corner
+            x1, y2,                # Left line
+            x1, y1 + radius        # Top left corner
+        ]
+        return self.canvas.create_polygon(points, **kwargs, smooth=True)
+
+    def create_note_buttons(self):
+        scroll_frame = tk.Frame(self, bg='#f5f5f5')
+        scroll_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        self.note_canvas = tk.Canvas(scroll_frame, bg='#f5f5f5', height=40)
+        self.note_scrollbar = tk.Scrollbar(scroll_frame, orient="horizontal", command=self.note_canvas.xview)
+        self.note_scrollable_frame = tk.Frame(self.note_canvas, bg='#f5f5f5')
+
+        self.note_scrollable_frame.bind("<Configure>",
+                                        lambda e: self.note_canvas.configure(scrollregion=self.note_canvas.bbox("all")))
+
+        self.note_canvas.create_window((0, 0), window=self.note_scrollable_frame, anchor="nw")
+
+        self.note_canvas.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+        self.note_scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+        self.note_canvas.configure(xscrollcommand=self.note_scrollbar.set)
+
+        for note in self.notes:
+            button = tk.Button(self.note_scrollable_frame, text=note,
+                               command=lambda n=note: self.create_draggable_note(100, 100, n),
+                               bg="#007bff", fg="white", font=('Arial', 16, 'bold'),
+                               borderwidth=2, relief='flat')  # Modern button style
+            button.pack(side=tk.LEFT, padx=5, pady=5)
+
+    def create_draggable_note(self, x, y, note):
+        DraggableNote(self.canvas, note, x, y)
+
+    def create_save_load_buttons(self):
+        button_frame = tk.Frame(self, bg='#f5f5f5')
+        button_frame.pack(fill=tk.X, padx=10, pady=10)
+
+        slot_label = tk.Label(button_frame, text="Select Save Slot:", bg='#f5f5f5', font=('Arial', 12))
+        slot_label.pack(side=tk.LEFT)
+
+        slot_dropdown = ttk.Combobox(button_frame, textvariable=self.selected_slot,
+                                     values=self.slots, state="readonly")
+        slot_dropdown.pack(side=tk.LEFT, padx=(0, 10))
+
+        save_button = tk.Button(button_frame, text="Save", command=self.save_notes,
+                                bg="#28a745", fg="white", font=('Arial', 12, 'bold'),
+                                borderwidth=2, relief='flat')  # Modern button style
+        save_button.pack(side=tk.LEFT, padx=5)
+
+        load_button = tk.Button(button_frame, text="Load", command=self.load_notes,
+                                bg="#dc3545", fg="white", font=('Arial', 12, 'bold'),
+                                borderwidth=2, relief='flat')  # Modern button style
+        load_button.pack(side=tk.LEFT, padx=5)
+
+    def save_notes(self):
+        slot = self.selected_slot.get()
+        notes_data = []
+        for item in self.canvas.find_withtag("draggable"):
+            note = self.canvas.itemcget(item, 'text')
+            x, y = self.canvas.coords(item)
+            notes_data.append({'note': note, 'x': x, 'y': y})
+
+        with open(f'{slot}.json', 'w') as f:
+            json.dump(notes_data, f)
+
+    def load_notes(self):
+        for item in self.canvas.find_withtag("draggable"):
+            self.canvas.delete(item)
+
+        slot = self.selected_slot.get()
+        try:
+            with open(f'{slot}.json', 'r') as f:
+                notes_data = json.load(f)
+                for note_data in notes_data:
+                    self.create_draggable_note(note_data['x'], note_data['y'], note_data['note'])
+        except FileNotFoundError:
+            print("Save file not found!")
+
+    def toggle_fullscreen(self, event=None):
+        self.attributes("-fullscreen", True)
+
+    def exit_fullscreen(self, event=None):
+        self.attributes("-fullscreen", False)
+        self.geometry("800x600")
+
+
+if __name__ == "__main__":
+    app = SheetMusicMaker()
+    app.mainloop()
