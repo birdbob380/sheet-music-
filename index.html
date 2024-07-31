@@ -3,111 +3,150 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>The Black Death in Medieval Europe</title>
+    <title>Sheet Music Maker</title>
     <style>
-        /* General styles */
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            line-height: 1.6;
+            background-color: #f5f5f5;
+            font-family: Arial, sans-serif;
             margin: 0;
-            padding: 0;
-            background: #f4f4f4;
-            color: #333;
-        } header {
-        background: #35424a;
-        color: #FFFFFF;
-        padding: 20px 0;
-        text-align: center;
-    }
-
-    header h1 {
-        margin: 0;
-    }
-
-    nav {
-        display: flex;
-        justify-content: center;
-        padding: 10px 0;
-    }
-
-    nav a {
-        color: #ffffff;
-        text-decoration: none;
-        padding: 0 15px;
-    }
-
-    nav a:hover {
-        color: #d1d1d1;
-    }
-
-    /* Section styles */
-    section {
-        padding: 20px;
-        margin: 0 15px;
-        background: #ffffff;
-        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        margin-bottom: 20px;
-        border-radius: 8px;
-    }
-
-    section h2 {
-        color: #000000 ;
-    }
-
-    /* Footer styles */
-    footer {
-        background: #35424a;
-        color: #ffffff;
-        text-align: center;
-        padding: 10px 0;
-    }
-</style>
+            overflow: hidden;
+        }
+        #canvasContainer {
+            position: relative;
+            width: 800px;
+            height: 600px;
+            border: 1px solid #ccc;
+            background-color: white;
+            margin: auto;
+            overflow: hidden;
+        }
+        .note {
+            cursor: pointer;
+            font-size: 100px;
+            display: inline-block;
+            margin: 10px;
+        }
+        #bin {
+            position: absolute;
+            width: 140px;
+            height: 70px;
+            background-color: gray;
+            border: 1px solid black;
+            border-radius: 10px;
+            text-align: center;
+            line-height: 70px;
+            color: white;
+            right: 10px;
+            bottom: 10px;
+        }
+        .button {
+            margin: 10px;
+            padding: 10px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+    </style>
 </head>
 <body>
-    <header>
-        <h1>The Black Death in Medieval Europe</h1>
-        <nav>
-            <a href="#what-is">What is The Black Death?</a>
-            <a href="#origin">Origin of The Black Death</a>
-            <a href="#causes">Major Causes</a>
-            <a href="#short-term-effects">Short-Term Effects</a>
-            <a href="#long-term-effects">Long-Term Effects</a>
-        </nav>
-    </header>
-    <main>
-        <section id="what-is">
-            <h2>What is The Black Death?</h2>
-            <p>
-                The Black Death was a devastating global epidemic of bubonic plague that struck Europe and Asia in the mid-14th century. The plague arrived in Europe in October 1347, when 12 ships from the Black Sea docked at the Sicilian port of Messina. People gathered on the docks were met with a horrifying surprise: most sailors aboard the ships were dead, and those still alive were gravely ill and covered in black boils that oozed blood and pus. Sicilian authorities hastily ordered the fleet of “death ships” out of the harbor, but it was too late: over the next five years, the Black Death would kill more than 20 million people in Europe—almost one-third of the continent’s population.
-            </p>
-        </section>
-        <section id="origin">
-            <h2>Origin of The Black Death</h2>
-            <p>
-                Historians are unsure of the Black Death’s origin. It is believed that the plague bacteria, Yersinia pestis, originated in the arid plains of Central Asia, where it then travelled along the Silk Road, reaching Crimea by 1343. Over the next few years, it spread to Constantinople and then to Europe, carried by fleas living on the black rats that so frequently lived aboard merchant ships. Ports being major urban centers at the time, were the perfect breeding ground for the rats and fleas, and thus the insidious bacterium.
-            </p>
-        </section>
-        <section id="causes">
-            <h2>Major Causes of The Black Death</h2>
-            <p>
-                The Black Death was caused by the bacterium Yersinia pestis, which is usually found in small rodents and their fleas. Poor sanitary conditions and dense urban populations created the perfect breeding ground for the spread of the disease. The fleas would bite the infected rats and then bite humans, transmitting the disease. Furthermore, the lack of medical knowledge meant that the population was unable to fight the disease effectively. Trade and warfare also played a significant role in the spread of the Black Death, as soldiers and merchants traveled, they carried the disease with them.
-            </p>
-        </section>
-        <section id="short-term-effects">
-            <h2>Major Short-Term Effects of The Black Death</h2>
-            <p>
-                The immediate impact of the Black Death was catastrophic. The high mortality rate led to severe labor shortages, which had a profound impact on the economy. Agricultural production declined, leading to food shortages and increased prices. Social structures were disrupted as survivors demanded higher wages or fled cities for the countryside, leading to widespread social unrest and the eventual decline of the feudal system. There was also a rise in persecution of minorities, such as Jews and foreigners, who were often scapegoated for the spread of the disease.
-            </p>
-        </section>
-        <section id="long-term-effects">
-            <h2>Major Long-Term Effects of The Black Death</h2>
-            <p>
-                The long-term effects of the Black Death were just as profound as the immediate ones. The significant reduction in population led to a surplus of goods and a demand for labor, which improved the standard of living for the surviving peasants. Wages increased, and the lower population density may have contributed to better health outcomes for future generations. The psychological impact of the Black Death led to a shift in societal values, with an increased emphasis on enjoying life and living for the moment, as reflected in the art and literature of the Renaissance. Additionally, the pandemic prompted advancements in medicine and public health, laying the groundwork for more modern approaches to disease prevention and treatment.
-            </p>
-        </section>
-    </main>
-    <footer>
-        <p>&copy; Hello I am Giulio</p>
-    </footer>
+
+<div id="canvasContainer">
+    <div id="staff"></div>
+    <div id="bin">Bin</div>
+</div>
+<div id="controls">
+    <button class="button" onclick="createNote('♪')">♪</button>
+    <button class="button" onclick="createNote('♫')">♫</button>
+    <button class="button" onclick="createNote('♬')">♬</button>
+    <button class="button" onclick="createNote('♩')">♩</button>
+    <!-- Add more note buttons as needed -->
+</div>
+
+<script>
+    const canvasContainer = document.getElementById('canvasContainer');
+    const bin = document.getElementById('bin');
+
+    // Drawing staff lines
+    const staff = document.createElement('div');
+    staff.style.position = 'absolute';
+    staff.style.width = '100%';
+    staff.style.top = '50px';
+    staff.style.zIndex = 0;
+    for (let i = 0; i < 5; i++) {
+        const line = document.createElement('div');
+        line.style.position = 'absolute';
+        line.style.height = '2px';
+        line.style.width = '700px';
+        line.style.backgroundColor = 'black';
+        line.style.top = `${50 + i * 20}px`;
+        staff.appendChild(line);
+    }
+    canvasContainer.appendChild(staff);
+
+    function createNote(note) {
+        const noteDiv = document.createElement('div');
+        noteDiv.classList.add('note');
+        noteDiv.innerText = note;
+        noteDiv.draggable = true;
+
+        noteDiv.addEventListener('dragstart', dragStart);
+        noteDiv.addEventListener('dragend', dragEnd);
+        noteDiv.addEventListener('drag', drag);
+        noteDiv.addEventListener('mousedown', initiateDrag);
+
+        canvasContainer.appendChild(noteDiv);
+    }
+
+    function initiateDrag(event) {
+        const note = event.currentTarget;
+        note.style.position = 'absolute';
+        note.style.zIndex = 1;
+        note.style.pointerEvents = 'none';
+        
+        note.style.left = (event.clientX - note.clientWidth / 2) + 'px';
+        note.style.top = (event.clientY - note.clientHeight / 2) + 'px';
+
+        document.addEventListener('mousemove', moveNote.bind(null, note));
+    }
+
+    function moveNote(note, event) {
+        note.style.left = (event.clientX - note.clientWidth / 2) + 'px';
+        note.style.top = (event.clientY - note.clientHeight / 2) + 'px';
+        
+        // Check if it is over the bin
+        const binRect = bin.getBoundingClientRect();
+        const noteRect = note.getBoundingClientRect();
+
+        if (isOverlapping(noteRect, binRect)) {
+            bin.style.backgroundColor = 'red';
+        } else {
+            bin.style.backgroundColor = 'gray';
+        }
+    }
+
+    function isOverlapping(rect1, rect2) {
+        return !(rect1.right < rect2.left || rect1.left > rect2.right ||
+                 rect1.bottom < rect2.top || rect1.top > rect2.bottom);
+    }
+
+    function dragEnd(event) {
+        const note = event.currentTarget;
+
+        // Check for drop inside the bin
+        const binRect = bin.getBoundingClientRect();
+        const noteRect = note.getBoundingClientRect();
+
+        if (isOverlapping(noteRect, binRect)) {
+            note.remove(); // Remove the note if dropped in the bin
+        }
+
+        document.removeEventListener('mousemove', moveNote.bind(null, note));
+        note.style.pointerEvents = ''; // Re-enable pointer events for the note
+    }
+
+</script>
 </body>
 </html>
