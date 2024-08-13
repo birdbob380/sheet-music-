@@ -98,7 +98,10 @@
         }
 
         .bin {
-            position: absolute;
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
             background-color: lightgray;
             border: 2px solid #007bff;
             text-align: center;
@@ -109,14 +112,6 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             width: 200px;
             height: 75px;
-        }
-
-        .bin-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #007bff;
-            font-size: 16px;
         }
 
         canvas {
@@ -152,7 +147,7 @@
 
     <div id="main-container" class="main-container" style="display: none;">
         <div class="canvas-wrapper">
-            <canvas id="canvas" width="800" height="600"></canvas>
+            <canvas id="canvas"></canvas>
             <div class="bin" id="bin">
                 <div class="bin-text">Bin</div>
             </div>
@@ -230,6 +225,13 @@
             }
         });
 
+        function resizeCanvas() {
+            const canvas = document.getElementById('canvas');
+            canvas.width = window.innerWidth * 0.8;  // Adjust width as needed
+            canvas.height = window.innerHeight * 0.5;  // Adjust height as needed
+            drawStaff();
+        }
+
         function drawStaff() {
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
@@ -254,14 +256,10 @@
                     ctx.fillText(note.text, note.x, note.y);
                 });
             }
-
-            // Position the bin below the staff lines
-            const bin = document.getElementById('bin');
-            bin.style.top = `${canvas.height - 100}px`;
-            bin.style.left = `${canvas.width / 2 - 100}px`;
         }
 
         function init() {
+            resizeCanvas();
             drawStaff();
             document.querySelector('.note-buttons').innerHTML = '';
             const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭',
@@ -351,6 +349,11 @@
             document.getElementById('main-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
         });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        // Initialize the application
+        init();
     </script>
 </body>
 
