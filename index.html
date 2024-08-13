@@ -5,7 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Sheet Music Maker</title>
-    <base href="/" /> <!-- Add this for GitHub Pages compatibility -->
+    <base href="/" />
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -103,8 +103,6 @@
             font-size: 16px;
             border-radius: 5px;
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            left: 30px;
-            top: 250px;
             width: 200px;
             height: 75px;
         }
@@ -119,6 +117,10 @@
 
         canvas {
             background-color: #eaeaea;
+        }
+
+        .controls {
+            margin-top: 20px;
         }
     </style>
 </head>
@@ -256,12 +258,17 @@
                     ctx.strokeRect(note.x - note.size / 2, note.y - note.size / 2, note.size, note.size);
                 }
             }
+
+            // Position the bin below the staff lines
+            const bin = document.getElementById('bin');
+            bin.style.top = `${canvas.height - 100}px`;
+            bin.style.left = `${canvas.width / 2 - 100}px`;
         }
 
         function init() {
             drawStaff();
             document.querySelector('.note-buttons').innerHTML = '';
-            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧'];
+            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭'];
             notes.forEach((note, index) => {
                 const noteButton = document.createElement('button');
                 noteButton.className = 'note-button-container';
