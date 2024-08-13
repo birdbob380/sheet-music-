@@ -66,9 +66,13 @@
 
         .note-buttons {
             display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             margin: 10px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            background-color: #fff;
         }
 
         .note-button-container {
@@ -213,50 +217,42 @@
             const password = document.getElementById('signup-password').value;
 
             const users = JSON.parse(localStorage.getItem('users')) || [];
-            const userExists = users.some(u => u.username === username);
+            const existingUser = users.find(u => u.username === username);
 
-            if (userExists) {
-                alert('Username already exists');
-                return;
+            if (existingUser) {
+                alert('Username already taken');
+            } else {
+                users.push({ username, password });
+                localStorage.setItem('users', JSON.stringify(users));
+                alert('Account created successfully');
+                document.getElementById('signup-container').style.display = 'none';
+                document.getElementById('login-container').style.display = 'block';
             }
-
-            users.push({ username, password });
-            localStorage.setItem('users', JSON.stringify(users));
-            alert('Account created successfully!');
-            document.getElementById('signup-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
         });
 
         function drawStaff() {
-            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            ctx.strokeStyle = 'black';
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000';
+
+            // Draw the 5 lines of the staff
             for (let i = 0; i < 5; i++) {
                 ctx.beginPath();
-                ctx.moveTo(30, 50 + i * 40);
-                ctx.lineTo(canvas.width - 30, 50 + i * 40);
+                ctx.moveTo(50, 100 + i * 20);
+                ctx.lineTo(canvas.width - 50, 100 + i * 20);
                 ctx.stroke();
             }
         }
 
         function drawNotes() {
-            const canvas = document.getElementById('canvas');
             const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStaff();
-            for (const note of notesArray) {
-                ctx.font = `${note.size}px Arial`;
-                ctx.textBaseline = 'middle';
-                ctx.textAlign = 'center';
-                ctx.fillStyle = 'black';
-                ctx.fillText(note.text, note.x, note.y);
-
-                if (note === selectedNote || isResizing) {
-                    ctx.strokeStyle = '#007bff';
-                    ctx.lineWidth = 2;
-                    ctx.strokeRect(note.x - note.size / 2, note.y - note.size / 2, note.size, note.size);
-                }
+            if (notesArray.length > 0) {
+                notesArray.forEach(note => {
+                    ctx.font = `${note.size}px Arial`;
+                    ctx.fillText(note.text, note.x, note.y);
+                });
             }
 
             // Position the bin below the staff lines
@@ -268,7 +264,9 @@
         function init() {
             drawStaff();
             document.querySelector('.note-buttons').innerHTML = '';
-            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭'];
+            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭',
+                '♪', '♫', '♬', '♩', '𝄠', '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺',
+                '𝄻', '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'];
             notes.forEach((note, index) => {
                 const noteButton = document.createElement('button');
                 noteButton.className = 'note-button-container';
@@ -287,7 +285,6 @@
         let notesArray = [];
         let selectedNote = null;
         let isDragging = false;
-        let isResizing = false;
 
         const canvas = document.getElementById('canvas');
         canvas.addEventListener('mousedown', function (e) {
