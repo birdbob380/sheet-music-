@@ -65,16 +65,17 @@
 
         .note-buttons {
             display: flex;
-            flex-wrap: wrap;
-            margin: 10px;
+            flex-wrap: nowrap;
+            overflow-x: auto;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 5px;
             background-color: #fff;
+            white-space: nowrap;
         }
 
         .note-button-container {
-            display: flex;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
             font-size: 36px; /* Increased font size for larger symbols */
@@ -189,7 +190,7 @@
             <button id="load-btn">Load</button>
             <button id="logout-btn">Logout</button>
         </div>
-        <div class="note-buttons">
+        <div class="note-buttons" id="note-buttons">
         </div>
     </div>
 
@@ -255,7 +256,6 @@
         function drawStaff() {
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.lineWidth = 2;
             ctx.strokeStyle = '#000';
             const staffLines = 5;
             const lineSpacing = canvas.height / staffLines;
