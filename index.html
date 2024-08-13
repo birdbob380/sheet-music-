@@ -4,262 +4,131 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheet Music Maker</title>
+    <title>Music Notation Editor</title>
     <style>
         body {
             font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
             margin: 0;
             padding: 0;
             display: flex;
             justify-content: center;
             align-items: center;
             height: 100vh;
-            flex-direction: column;
+            background-color: #f0f0f0;
         }
 
-        .login-container,
-        .signup-container,
-        .main-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 300px;
+        #main-container {
+            display: none;
+        }
+
+        #login-container {
             text-align: center;
         }
 
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
+        #canvas-wrapper {
+            position: relative;
+            border: 2px solid black;
+            display: inline-block;
+            resize: both;
+            overflow: hidden;
+            width: 800px;
+            height: 400px;
         }
 
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
+        #canvas {
+            border: 1px solid black;
+            background-color: #fff;
+        }
+
+        #bin {
+            position: absolute;
+            bottom: 10px;
+            right: 10px;
+            width: 40px;
+            height: 40px;
+            background-color: red;
             cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .link {
-            display: block;
-            margin-top: 10px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
+            color: white;
+            text-align: center;
+            line-height: 40px;
+            font-size: 24px;
+            border-radius: 50%;
         }
 
         .note-buttons {
+            margin-top: 10px;
             display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-            white-space: nowrap;
+            flex-wrap: wrap;
         }
 
         .note-button-container {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            width: 80px;
-            height: 80px;
+            display: inline-block;
+            position: relative;
             margin: 5px;
-            border: none;
-            background-color: #007bff;
-            color: white;
             cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            resize: both;
-            overflow: hidden;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #eee;
         }
 
-        .note-button-container:hover {
-            background-color: #0056b3;
-        }
-
-        .note-button-container .resize-handle {
+        .resize-handle {
             position: absolute;
             bottom: 0;
             right: 0;
             width: 10px;
             height: 10px;
-            background: #007bff;
+            background-color: black;
             cursor: se-resize;
         }
 
-        .canvas-wrapper {
-            position: relative;
-            display: inline-block;
-            width: 80vw;
-            height: 60vh;
+        .note-button-container button {
+            background: none;
+            border: none;
+            font-size: inherit;
+            cursor: pointer;
         }
 
-        canvas {
-            background-color: #eaeaea;
-            width: 100%;
-            height: 100%;
-        }
-
-        .bin {
+        #resize-handle {
             position: absolute;
-            bottom: 20px;
-            left: 20px;
-            background-color: lightgray;
-            border: 2px solid #007bff;
-            text-align: center;
-            line-height: 75px;
-            color: #007bff;
-            font-size: 16px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            width: 200px;
-            height: 75px;
-            cursor: move;
-        }
-
-        .resize-handle {
-            position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #007bff;
+            bottom: 10px;
+            right: 10px;
+            width: 10px;
+            height: 10px;
+            background: black;
             cursor: se-resize;
-        }
-
-        .resize-handle-br {
-            bottom: 0;
-            right: 0;
-        }
-
-        .controls {
-            margin-top: 20px;
         }
     </style>
 </head>
 
 <body>
-    <div id="login-container" class="login-container">
-        <h2>Login</h2>
-        <form id="login-form">
-            <input type="text" id="login-username" placeholder="Username" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <a href="#" class="link" id="to-signup">Create an account</a>
+    <div id="login-container">
+        <h1>Login</h1>
+        <input type="text" id="username" placeholder="Username">
+        <button id="login-btn">Login</button>
     </div>
 
-    <div id="signup-container" class="signup-container" style="display: none;">
-        <h2>Sign Up</h2>
-        <form id="signup-form">
-            <input type="text" id="signup-username" placeholder="Username" required>
-            <input type="password" id="signup-password" placeholder="Password" required>
-            <button type="submit">Sign Up</button>
-        </form>
-        <a href="#" class="link" id="to-login">Already have an account? Login</a>
-    </div>
-
-    <div id="main-container" class="main-container" style="display: none;">
-        <div class="canvas-wrapper" id="canvas-wrapper">
+    <div id="main-container">
+        <div id="canvas-wrapper">
             <canvas id="canvas"></canvas>
-            <div class="resize-handle resize-handle-br" id="resize-handle"></div>
-            <div class="bin" id="bin">
-                <div class="bin-text">Bin</div>
-            </div>
+            <div id="resize-handle"></div>
+            <div id="bin">🗑️</div>
         </div>
-        <div class="controls">
-            <label for="slot-select">Select Save Slot:</label>
-            <select id="slot-select">
-                <option value="slot1">Slot 1</option>
-                <option value="slot2">Slot 2</option>
-                <option value="slot3">Slot 3</option>
-                <option value="slot4">Slot 4</option>
-                <option value="slot5">Slot 5</option>
-                <option value="slot6">Slot 6</option>
-                <option value="slot7">Slot 7</option>
-                <option value="slot8">Slot 8</option>
-                <option value="slot9">Slot 9</option>
-                <option value="slot10">Slot 10</option>
-            </select>
-            <button id="save-btn">Save</button>
-            <button id="load-btn">Load</button>
-            <button id="logout-btn">Logout</button>
-        </div>
-        <div class="note-buttons" id="note-buttons">
-        </div>
+
+        <div class="note-buttons"></div>
+
+        <select id="slot-select">
+            <option value="slot1">Slot 1</option>
+            <option value="slot2">Slot 2</option>
+        </select>
+        <button id="save-btn">Save</button>
+        <button id="load-btn">Load</button>
+        <button id="logout-btn">Logout</button>
     </div>
 
     <script>
-        document.getElementById('to-signup').addEventListener('click', function (event) {
-            event.preventDefault();
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('signup-container').style.display = 'block';
-        });
-
-        document.getElementById('to-login').addEventListener('click', function (event) {
-            event.preventDefault();
-            document.getElementById('signup-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
-        });
-
-        document.getElementById('login-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                localStorage.setItem('currentUser', username);
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('signup-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'block';
-                init();
-            } else {
-                alert('Invalid username or password');
-            }
-        });
-
-        document.getElementById('signup-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const username = document.getElementById('signup-username').value;
-            const password = document.getElementById('signup-password').value;
-
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const existingUser = users.find(u => u.username === username);
-
-            if (existingUser) {
-                alert('Username already taken');
-            } else {
-                users.push({ username, password });
-                localStorage.setItem('users', JSON.stringify(users));
-                alert('Account created successfully');
-                document.getElementById('signup-container').style.display = 'none';
-                document.getElementById('login-container').style.display = 'block';
-            }
-        });
-
         function resizeCanvas() {
-            const canvas = document.getElementById('canvas');
             const canvasWrapper = document.getElementById('canvas-wrapper');
+            const canvas = document.getElementById('canvas');
             canvas.width = canvasWrapper.clientWidth;
             canvas.height = canvasWrapper.clientHeight;
             drawNotes();
@@ -284,12 +153,10 @@
             const ctx = canvas.getContext('2d');
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             drawStaff();
-            if (notesArray.length > 0) {
-                notesArray.forEach(note => {
-                    ctx.font = `${note.size}px Arial`;
-                    ctx.fillText(note.text, note.x, note.y);
-                });
-            }
+            notesArray.forEach(note => {
+                ctx.font = `${note.size}px Arial`;
+                ctx.fillText(note.text, note.x, note.y);
+            });
         }
 
         function init() {
@@ -300,15 +167,14 @@
                 '♪', '♫', '♬', '♩', '𝄠', '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺',
                 '𝄻', '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'];
             notes.forEach((note, index) => {
-                const noteButton = document.createElement('button');
+                const noteButton = document.createElement('div');
                 noteButton.className = 'note-button-container';
-                noteButton.innerText = note;
+                noteButton.innerHTML = `<button>${note}</button>`;
                 noteButton.onclick = () => addNoteToCanvas(note);
-                document.querySelector('.note-buttons').appendChild(noteButton);
-                
+
                 // Add resize handle to each button
                 const resizeHandle = document.createElement('div');
-                resizeHandle.className = 'resize-handle resize-handle-br';
+                resizeHandle.className = 'resize-handle';
                 noteButton.appendChild(resizeHandle);
                 
                 // Add event listeners for resizing
@@ -332,6 +198,8 @@
                     document.addEventListener('mousemove', onMouseMove);
                     document.addEventListener('mouseup', onMouseUp);
                 });
+
+                document.querySelector('.note-buttons').appendChild(noteButton);
             });
         }
 
@@ -408,8 +276,18 @@
 
             const selectedSlot = document.getElementById('slot-select').value;
             const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            notesArray = (userData[currentUser] && userData[currentUser][selectedSlot]) || [];
+            notesArray = userData[currentUser] && userData[currentUser][selectedSlot] ? userData[currentUser][selectedSlot] : [];
             drawNotes();
+        });
+
+        document.getElementById('login-btn').addEventListener('click', function () {
+            const username = document.getElementById('username').value;
+            if (username) {
+                localStorage.setItem('currentUser', username);
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+                init();
+            }
         });
 
         document.getElementById('logout-btn').addEventListener('click', function () {
@@ -418,22 +296,17 @@
             document.getElementById('login-container').style.display = 'block';
         });
 
-        window.addEventListener('resize', resizeCanvas);
-
-        // Resizing Handle Functionality
         const resizeHandle = document.getElementById('resize-handle');
-        const canvasWrapper = document.getElementById('canvas-wrapper');
-
-        resizeHandle.addEventListener('mousedown', function (e) {
+        resizeHandle.addEventListener('mousedown', (e) => {
             e.preventDefault();
             const startX = e.clientX;
             const startY = e.clientY;
-            const startWidth = canvasWrapper.clientWidth;
-            const startHeight = canvasWrapper.clientHeight;
+            const startWidth = document.getElementById('canvas-wrapper').offsetWidth;
+            const startHeight = document.getElementById('canvas-wrapper').offsetHeight;
 
             function onMouseMove(e) {
-                canvasWrapper.style.width = `${startWidth + (e.clientX - startX)}px`;
-                canvasWrapper.style.height = `${startHeight + (e.clientY - startY)}px`;
+                document.getElementById('canvas-wrapper').style.width = `${startWidth + (e.clientX - startX)}px`;
+                document.getElementById('canvas-wrapper').style.height = `${startHeight + (e.clientY - startY)}px`;
                 resizeCanvas();
             }
 
@@ -446,20 +319,17 @@
             document.addEventListener('mouseup', onMouseUp);
         });
 
-        // Draggable Bin
-        const bin = document.getElementById('bin');
-        bin.addEventListener('mousedown', function (e) {
+        document.getElementById('bin').addEventListener('mousedown', function (e) {
             e.preventDefault();
+            const bin = document.getElementById('bin');
             const startX = e.clientX;
             const startY = e.clientY;
-            const startLeft = parseInt(window.getComputedStyle(bin).left, 10);
-            const startTop = parseInt(window.getComputedStyle(bin).top, 10);
+            const startLeft = bin.offsetLeft;
+            const startTop = bin.offsetTop;
 
             function onMouseMove(e) {
-                const dx = e.clientX - startX;
-                const dy = e.clientY - startY;
-                bin.style.left = `${startLeft + dx}px`;
-                bin.style.top = `${startTop + dy}px`;
+                bin.style.left = `${startLeft + (e.clientX - startX)}px`;
+                bin.style.top = `${startTop + (e.clientY - startY)}px`;
             }
 
             function onMouseUp() {
@@ -471,18 +341,15 @@
             document.addEventListener('mouseup', onMouseUp);
         });
 
-        // Snap to canvas
-        function snapToCanvas(note) {
-            const canvas = document.getElementById('canvas');
-            const margin = 10; // Margin from canvas edge
-            if (note.x < margin) note.x = margin;
-            if (note.x > canvas.width - margin) note.x = canvas.width - margin;
-            if (note.y < margin) note.y = margin;
-            if (note.y > canvas.height - margin) note.y = canvas.height - margin;
-        }
-
-        // Initialize the application
-        init();
+        // Initialize with user data if available
+        window.onload = function () {
+            const currentUser = localStorage.getItem('currentUser');
+            if (currentUser) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+                init();
+            }
+        };
     </script>
 </body>
 
