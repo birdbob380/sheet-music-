@@ -1,221 +1,4 @@
-<!DOCTYPE html>
-<html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sheet Music Maker</title>
-    <base href="/" />
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f5f5f5;
-            margin: 0;
-            padding: 0;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
-        }
-
-        .login-container,
-        .signup-container,
-        .main-container {
-            background-color: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-            width: 300px;
-            text-align: center;
-        }
-
-        input[type="text"],
-        input[type="password"] {
-            width: 100%;
-            padding: 8px;
-            margin: 8px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-
-        button {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        button:hover {
-            background-color: #0056b3;
-        }
-
-        .link {
-            display: block;
-            margin-top: 10px;
-            color: #007bff;
-            text-decoration: none;
-        }
-
-        .link:hover {
-            text-decoration: underline;
-        }
-
-        .note-buttons {
-            display: flex;
-            flex-wrap: nowrap;
-            overflow-x: auto;
-            margin: 10px;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            background-color: #fff;
-        }
-
-        .note-button-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 30px;
-            width: 60px;
-            height: 60px;
-            line-height: 60px;
-            text-align: center;
-            margin: 5px;
-            border: none;
-            background-color: #007bff;
-            color: white;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-        }
-
-        .note-button-container:hover {
-            background-color: #0056b3;
-        }
-
-        .bin {
-            position: absolute;
-            background-color: lightgray;
-            border: 2px solid #007bff;
-            text-align: center;
-            line-height: 75px;
-            color: #007bff;
-            font-size: 16px;
-            border-radius: 5px;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
-            width: 200px;
-            height: 75px;
-        }
-
-        .bin-text {
-            position: absolute;
-            width: 100%;
-            text-align: center;
-            color: #007bff;
-            font-size: 16px;
-        }
-
-        canvas {
-            background-color: #eaeaea;
-        }
-
-        .controls {
-            margin-top: 20px;
-        }
-    </style>
-</head>
-
-<body>
-    <div id="login-container" class="login-container">
-        <h2>Login</h2>
-        <form id="login-form">
-            <input type="text" id="login-username" placeholder="Username" required>
-            <input type="password" id="login-password" placeholder="Password" required>
-            <button type="submit">Login</button>
-        </form>
-        <a href="#" class="link" id="to-signup">Create an account</a>
-    </div>
-
-    <div id="signup-container" class="signup-container" style="display: none;">
-        <h2>Sign Up</h2>
-        <form id="signup-form">
-            <input type="text" id="signup-username" placeholder="Username" required>
-            <input type="password" id="signup-password" placeholder="Password" required>
-            <button type="submit">Sign Up</button>
-        </form>
-        <a href="#" class="link" id="to-login">Already have an account? Login</a>
-    </div>
-
-    <div id="main-container" class="main-container" style="display: none;">
-        <div class="canvas-wrapper">
-            <canvas id="canvas" width="800" height="600"></canvas>
-            <div class="bin" id="bin">
-                <div class="bin-text">Bin</div>
-            </div>
-        </div>
-        <div class="controls">
-            <label for="slot-select">Select Save Slot:</label>
-            <select id="slot-select">
-                <option value="slot1">Slot 1</option>
-                <option value="slot2">Slot 2</option>
-                <option value="slot3">Slot 3</option>
-                <option value="slot4">Slot 4</option>
-                <option value="slot5">Slot 5</option>
-                <option value="slot6">Slot 6</option>
-                <option value="slot7">Slot 7</option>
-                <option value="slot8">Slot 8</option>
-                <option value="slot9">Slot 9</option>
-                <option value="slot10">Slot 10</option>
-            </select>
-            <button id="save-btn">Save</button>
-            <button id="load-btn">Load</button>
-            <button id="logout-btn">Logout</button>
-        </div>
-        <div class="note-buttons">
-            <!-- Note buttons will be dynamically added here -->
-        </div>
-    </div>
-
-    <script>
-        document.getElementById('to-signup').addEventListener('click', function (event) {
-            event.preventDefault();
-            document.getElementById('login-container').style.display = 'none';
-            document.getElementById('signup-container').style.display = 'block';
-        });
-
-        document.getElementById('to-login').addEventListener('click', function (event) {
-            event.preventDefault();
-            document.getElementById('signup-container').style.display = 'none';
-            document.getElementById('login-container').style.display = 'block';
-        });
-
-        document.getElementById('login-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const username = document.getElementById('login-username').value;
-            const password = document.getElementById('login-password').value;
-
-            const users = JSON.parse(localStorage.getItem('users')) || [];
-            const user = users.find(u => u.username === username && u.password === password);
-
-            if (user) {
-                localStorage.setItem('currentUser', username);
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('signup-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'block';
-                init();
-            } else {
-                alert('Invalid username or password');
-            }
-        });
-
-        document.getElementById('signup-form').addEventListener('submit', function (event) {
-            event.preventDefault();
-            const username = document.getElementById('signup-username').value;
-            const password = document.getElementById('signup-password').value;
+            document.getElementById('signup-password').value;
 
             const users = JSON.parse(localStorage.getItem('users')) || [];
             const existingUser = users.find(u => u.username === username);
@@ -225,12 +8,126 @@
             } else {
                 users.push({ username, password });
                 localStorage.setItem('users', JSON.stringify(users));
-                localStorage.setItem('currentUser', username);
+                alert('Account created successfully');
                 document.getElementById('signup-container').style.display = 'none';
-                document.getElementById('login-container').style.display = 'none';
-                document.getElementById('main-container').style.display = 'block';
-                init();
+                document.getElementById('login-container').style.display = 'block';
             }
+        });
+
+        function drawStaff() {
+            const ctx = canvas.getContext('2d');
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = '#000';
+
+            // Draw the 5 lines of the staff
+            for (let i = 0; i < 5; i++) {
+                ctx.beginPath();
+                ctx.moveTo(50, 100 + i * 20);
+                ctx.lineTo(canvas.width - 50, 100 + i * 20);
+                ctx.stroke();
+            }
+        }
+
+        function drawNotes() {
+            const ctx = canvas.getContext('2d');
+            drawStaff();
+            if (notesArray.length > 0) {
+                notesArray.forEach(note => {
+                    ctx.font = `${note.size}px Arial`;
+                    ctx.fillText(note.text, note.x, note.y);
+                });
+            }
+
+            // Position the bin below the staff lines
+            const bin = document.getElementById('bin');
+            bin.style.top = `${canvas.height - 100}px`;
+            bin.style.left = `${canvas.width / 2 - 100}px`;
+        }
+
+        function init() {
+            drawStaff();
+            document.querySelector('.note-buttons').innerHTML = '';
+            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭', 
+                           '♪', '♫', '♬', '♩', '𝄠', '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺', 
+                           '𝄻', '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'];
+            notes.forEach((note, index) => {
+                const noteButton = document.createElement('button');
+                noteButton.className = 'note-button-container';
+                noteButton.innerText = note;
+                noteButton.onclick = () => addNoteToCanvas(note);
+                document.querySelector('.note-buttons').appendChild(noteButton);
+            });
+        }
+
+        function addNoteToCanvas(note) {
+            const newNote = { text: note, x: 100, y: 100, size: 40 };
+            notesArray.push(newNote);
+            drawNotes();
+        }
+
+        let notesArray = [];
+        let selectedNote = null;
+        let isDragging = false;
+
+        const canvas = document.getElementById('canvas');
+        canvas.addEventListener('mousedown', function (e) {
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            selectedNote = notesArray.find(note =>
+                x >= note.x - note.size / 2 &&
+                x <= note.x + note.size / 2 &&
+                y >= note.y - note.size / 2 &&
+                y <= note.y + note.size / 2
+            );
+            if (selectedNote) {
+                isDragging = true;
+                drawNotes();
+            }
+        });
+
+        canvas.addEventListener('mousemove', function (e) {
+            if (isDragging) {
+                const rect = canvas.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                selectedNote.x = x;
+                selectedNote.y = y;
+                drawNotes();
+            }
+        });
+
+        canvas.addEventListener('mouseup', function () {
+            isDragging = false;
+        });
+
+        document.getElementById('save-btn').addEventListener('click', function () {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                alert('You need to be logged in to save');
+                return;
+            }
+
+            const selectedSlot = document.getElementById('slot-select').value;
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            userData[currentUser] = userData[currentUser] || {};
+            userData[currentUser][selectedSlot] = notesArray;
+            localStorage.setItem('userData', JSON.stringify(userData));
+            alert('Saved successfully!');
+        });
+
+        document.getElementById('load-btn').addEventListener('click', function () {
+            const currentUser = localStorage.getItem('currentUser');
+            if (!currentUser) {
+                alert('You need to be logged in to load');
+                return;
+            }
+
+            const selectedSlot = document.getElementById('slot-select').value;
+            const userData = JSON.parse(localStorage.getItem('userData')) || {};
+            notesArray = (userData[currentUser] && userData[currentUser][selectedSlot]) || [];
+            drawNotes();
         });
 
         document.getElementById('logout-btn').addEventListener('click', function () {
@@ -238,10 +135,6 @@
             document.getElementById('main-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
         });
-
-        function init() {
-            // Initialization logic for the canvas and other components
-        }
     </script>
 </body>
 
