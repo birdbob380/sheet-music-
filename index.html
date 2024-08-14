@@ -260,6 +260,8 @@
             const bin = document.getElementById('bin');
             bin.style.top = `${binY}px`;
             bin.style.left = `${binX}px`;
+            bin.style.width = `${binWidth}px`;
+            bin.style.height = `${binHeight}px`;
         }
 
         let notesArray = [];
@@ -280,7 +282,10 @@
 
         let binX = 50;
         let binY = 450;
+        let binWidth = 200;
+        let binHeight = 75;
         let binDragging = false;
+        let binResizing = false;
         let binOffsetX = 0;
         let binOffsetY = 0;
 
@@ -297,9 +302,9 @@
             });
 
             document.addEventListener('mousedown', function (event) {
-                if (event.target === canvas) {
-                    const { offsetX: mouseX, offsetY: mouseY } = event;
+                const { offsetX: mouseX, offsetY: mouseY } = event;
 
+                if (event.target === canvas) {
                     notesArray.forEach(note => {
                         if (mouseX >= note.x && mouseX <= note.x + note.width && mouseY >= note.y - note.height && mouseY <= note.y) {
                             draggingNote = note;
@@ -309,8 +314,12 @@
                             resizing = true;
                         }
                     });
+                }
 
-                    if (mouseX >= binX && mouseX <= binX + 200 && mouseY >= binY && mouseY <= binY + 75) {
+                if (mouseX >= binX && mouseX <= binX + binWidth && mouseY >= binY && mouseY <= binY + binHeight) {
+                    if (mouseX >= binX + binWidth - 10 && mouseY >= binY + binHeight - 10) {
+                        binResizing = true;
+                    } else {
                         binDragging = true;
                         binOffsetX = mouseX - binX;
                         binOffsetY = mouseY - binY;
@@ -324,6 +333,11 @@
                 if (binDragging) {
                     binX = mouseX - binOffsetX;
                     binY = mouseY - binOffsetY;
+                }
+
+                if (binResizing) {
+                    binWidth = Math.max(50, mouseX - binX);
+                    binHeight = Math.max(25, mouseY - binY);
                 }
 
                 if (draggingNote && dragging) {
@@ -345,6 +359,7 @@
                 resizing = false;
                 draggingNote = null;
                 binDragging = false;
+                binResizing = false;
             });
 
             drawStaff();
