@@ -109,6 +109,7 @@
             box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
             width: 200px;
             height: 75px;
+            cursor: move;
         }
 
         .bin-text {
@@ -257,100 +258,143 @@
 
             // Position the bin below the staff lines
             const bin = document.getElementById('bin');
-            bin.style.top = `${canvas.height - 100}px`;
-            bin.style.left = `${canvas.width / 2 - 100}px`;
-        }
-
-        function init() {
-            drawStaff();
-            document.querySelector('.note-buttons').innerHTML = '';
-            const notes = ['𝅘𝅥', '𝅘𝅥𝅮', '𝅘𝅥𝅯', '𝅘𝅥𝅰', '𝅘𝅥𝅱', '𝅘𝅥𝅲', '𝅥', '𝅦', '𝅧', '𝄞', '𝄢', '𝄡', '𝄫', '♯', '♭',
-                '♪', '♫', '♬', '♩', '𝄠', '𝄪', '𝄀', '𝄁', '𝄴', '𝄵', '𝄶', '𝄷', '𝄸', '𝄹', '𝄺',
-                '𝄻', '𝄼', '𝄽', '𝄾', '𝄿', '𝅀', '𝅁', '𝅂', '𝅃', '𝅄', '𝅅', '𝅆', '𝅇', '𝅈'];
-            notes.forEach((note, index) => {
-                const noteButton = document.createElement('button');
-                noteButton.className = 'note-button-container';
-                noteButton.innerText = note;
-                noteButton.onclick = () => addNoteToCanvas(note);
-                document.querySelector('.note-buttons').appendChild(noteButton);
-            });
-        }
-
-        function addNoteToCanvas(note) {
-            const newNote = { text: note, x: 100, y: 100, size: 40 };
-            notesArray.push(newNote);
-            drawNotes();
+            bin.style.top = `${binY}px`;
+            bin.style.left = `${binX}px`;
         }
 
         let notesArray = [];
-        let selectedNote = null;
-        let isDragging = false;
+        let draggingNote = null;
+        let dragging = false;
+        let resizing = false;
 
+        let currentUser = localStorage.getItem('currentUser');
         const canvas = document.getElementById('canvas');
-        canvas.addEventListener('mousedown', function (e) {
-            const rect = canvas.getBoundingClientRect();
-            const x = e.clientX - rect.left;
-            const y = e.clientY - rect.top;
-            selectedNote = notesArray.find(note =>
-                x >= note.x - note.size / 2 &&
-                x <= note.x + note.size / 2 &&
-                y >= note.y - note.size / 2 &&
-                y <= note.y + note.size / 2
-            );
-            if (selectedNote) {
-                isDragging = true;
+
+        const noteButtons = [
+            { symbol: '𝅘𝅥𝅯', name: 'Whole Note' },
+            { symbol: '𝅘𝅥𝅮', name: 'Half Note' },
+            { symbol: '𝅘𝅥𝅭', name: 'Quarter Note' },
+            { symbol: '𝅘𝅥𝅬', name: 'Eighth Note' },
+            { symbol: '𝅘𝅥𝅫', name: 'Sixteenth Note' },
+        ];
+
+        let binX = 50;
+        let binY = 450;
+        let binDragging = false;
+        let binOffsetX = 0;
+        let binOffsetY = 0;
+
+        function init() {
+            const noteButtonsContainer = document.querySelector('.note-buttons');
+            noteButtons.forEach(note => {
+                const button = document.createElement('button');
+                button.className = 'note-button-container';
+                button.textContent = note.symbol;
+                button.addEventListener('click', () => {
+                    addNoteToCanvas(note.symbol);
+                });
+                noteButtonsContainer.appendChild(button);
+            });
+
+            document.addEventListener('mousedown', function (event) {
+                if (event.target === canvas) {
+                    const { offsetX: mouseX, offsetY: mouseY } = event;
+
+                    notesArray.forEach(note => {
+                        if (mouseX >= note.x && mouseX <= note.x + note.width && mouseY >= note.y - note.height && mouseY <= note.y) {
+                            draggingNote = note;
+                            dragging = true;
+                        } else if (mouseX >= note.x + note.width - 10 && mouseX <= note.x + note.width && mouseY >= note.y - note.height && mouseY <= note.y) {
+                            draggingNote = note;
+                            resizing = true;
+                        }
+                    });
+
+                    if (mouseX >= binX && mouseX <= binX + 200 && mouseY >= binY && mouseY <= binY + 75) {
+                        binDragging = true;
+                        binOffsetX = mouseX - binX;
+                        binOffsetY = mouseY - binY;
+                    }
+                }
+            });
+
+            document.addEventListener('mousemove', function (event) {
+                const { offsetX: mouseX, offsetY: mouseY } = event;
+
+                if (binDragging) {
+                    binX = mouseX - binOffsetX;
+                    binY = mouseY - binOffsetY;
+                }
+
+                if (draggingNote && dragging) {
+                    draggingNote.x = mouseX;
+                    draggingNote.y = mouseY;
+                }
+
+                if (draggingNote && resizing) {
+                    draggingNote.width = mouseX - draggingNote.x;
+                    draggingNote.height = mouseY - draggingNote.y;
+                    draggingNote.size = Math.max(draggingNote.width, draggingNote.height);
+                }
+
                 drawNotes();
-            }
-        });
+            });
 
-        canvas.addEventListener('mousemove', function (e) {
-            if (isDragging) {
-                const rect = canvas.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                selectedNote.x = x;
-                selectedNote.y = y;
-                drawNotes();
-            }
-        });
+            document.addEventListener('mouseup', function () {
+                dragging = false;
+                resizing = false;
+                draggingNote = null;
+                binDragging = false;
+            });
 
-        canvas.addEventListener('mouseup', function () {
-            isDragging = false;
-        });
+            drawStaff();
+        }
 
-        document.getElementById('save-btn').addEventListener('click', function () {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) {
-                alert('You need to be logged in to save');
-                return;
-            }
+        function addNoteToCanvas(symbol) {
+            const ctx = canvas.getContext('2d');
+            ctx.font = '40px Arial';
+            const metrics = ctx.measureText(symbol);
+            const width = metrics.width;
+            const height = 40;
 
-            const selectedSlot = document.getElementById('slot-select').value;
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            userData[currentUser] = userData[currentUser] || {};
-            userData[currentUser][selectedSlot] = notesArray;
-            localStorage.setItem('userData', JSON.stringify(userData));
-            alert('Saved successfully!');
-        });
-
-        document.getElementById('load-btn').addEventListener('click', function () {
-            const currentUser = localStorage.getItem('currentUser');
-            if (!currentUser) {
-                alert('You need to be logged in to load');
-                return;
-            }
-
-            const selectedSlot = document.getElementById('slot-select').value;
-            const userData = JSON.parse(localStorage.getItem('userData')) || {};
-            notesArray = (userData[currentUser] && userData[currentUser][selectedSlot]) || [];
+            notesArray.push({ text: symbol, x: 100, y: 150, width: width, height: height, size: 40 });
             drawNotes();
-        });
+        }
 
         document.getElementById('logout-btn').addEventListener('click', function () {
             localStorage.removeItem('currentUser');
             document.getElementById('main-container').style.display = 'none';
             document.getElementById('login-container').style.display = 'block';
         });
+
+        document.getElementById('save-btn').addEventListener('click', function () {
+            const slot = document.getElementById('slot-select').value;
+            localStorage.setItem(`${currentUser}_${slot}`, JSON.stringify(notesArray));
+            alert('Saved successfully');
+        });
+
+        document.getElementById('load-btn').addEventListener('click', function () {
+            const slot = document.getElementById('slot-select').value;
+            const savedNotes = JSON.parse(localStorage.getItem(`${currentUser}_${slot}`));
+
+            if (savedNotes) {
+                notesArray = savedNotes;
+                drawNotes();
+            } else {
+                alert('No saved notes in this slot');
+            }
+        });
+
+        window.onload = function () {
+            if (currentUser) {
+                document.getElementById('login-container').style.display = 'none';
+                document.getElementById('signup-container').style.display = 'none';
+                document.getElementById('main-container').style.display = 'block';
+                init();
+            } else {
+                document.getElementById('login-container').style.display = 'block';
+            }
+        };
     </script>
 </body>
 
